@@ -99,7 +99,7 @@ void make_iteration(const parameters& wave_params, vector<float>& next_u,
 
 
 void main() {
-	string file_path = "C:\\Users\\Georgiy\\Desktop\\C++ course\\lectures\\Г«ГҐГЄГ¶ГЁГї 2\\Г¤Г®Г¬Г ГёГЄГ _1";
+	string file_path = "C:\\Users\\Georgiy\\Desktop\\C++ course\\lectures\\лекция 2\\домашка_1";
 	string input_name = "\\input.txt";
 	string c_name = "\\c.raw";
 	parameters wave_params = parameters(file_path + input_name, file_path + c_name);
