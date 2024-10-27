@@ -1,89 +1,116 @@
-# include <stdio.h>
-# include <iostream>
-#include <fstream>
+#include "CSR3Mat.h"
 
-class DynamicArray3D {
-private:
-	int* ptr_level3;  // указатель третьего уровня глубины (указывает на массив значений типа double)
-	int** ptr_level2;  // указатель второго уровня глубины на массив указателей double*
-	int*** ptr_level1;  // указатель первого уровня глубины на массив указателей double**
-	size_t size_1, size_2, size_3;  // размеры трёхмерного массива
-public:
-	// функция возвращает указатель, по которому можно итерироваться
-	int*** get_ptr() {
-		return ptr_level1;
+
+void indexation_test(string file_path) {
+	string input_name = "\\input_CSR3.txt";
+
+	CSR3Mat my_mat;
+	my_mat.read_from_file(file_path + input_name);
+	//my_mat.print_info();
+
+	FilledMat my_fmat = move(my_mat.to_filled());
+	my_fmat.print_info();
+	cout << endl << endl;
+
+	try {
+		my_mat.pop(index_tuple(1, 0));  // correct pop
+		my_mat.insert(index_tuple(4, 4), 200);  // simple insert
+		my_mat.insert(index_tuple(1, 3), -200);  // insert with memory allocation
+		double a = my_mat.get_elem(index_tuple(0, 0));  // correct getting
+		cout << "Getting value by (0, 0): \t" << a << endl;
+		my_mat.pop(index_tuple(3, 4));  // correct pop
+		my_mat.pop(index_tuple(0, 0));  // correct pop
+		my_mat.pop(index_tuple(1, 1));  // correct pop
+		my_mat.pop(index_tuple(3, 0));  // pop with memory allocation
+		my_mat.pop(index_tuple(5, 5));  // incorrect pop
 	}
-
-	// функция по ссылкам передает разеры массива
-	void get_shape(size_t& size_1_new, size_t& size_2_new, size_t& size_3_new) {
-		size_1_new, size_2_new, size_3_new = size_1, size_2, size_3;
+	catch (const string error_message) {
+		cout << endl << error_message << endl;
 	}
+	//my_mat.print_info();
 
-	// функция заполняет массив нулями
-	void make_zeros() {
-		size_t full_size = size_1 * size_2 * size_3;
-		for (size_t i = 0; i < full_size; i++){
-			ptr_level3[i] = 0;
-		}
-	}
+	FilledMat new_my_fmat = move(my_mat.to_filled());
+	new_my_fmat.print_info();
 
-	DynamicArray3D(size_t size_1_new, size_t size_2_new, size_t size_3_new) {
-		size_1 = size_1_new;
-		size_2 = size_2_new;
-		size_3 = size_3_new;
-
-		ptr_level3 = new int[size_1 * size_2 * size_3];
-		ptr_level2 = new int*[size_1 * size_2];
-		ptr_level1 = new int**[size_1];
-
-		for (size_t i = 0; i < size_1 * size_2; i++){
-			ptr_level2[i] = &ptr_level3[i * size_3];
-		}
-		for (size_t i = 0; i < size_1; i++){
-			ptr_level1[i] = &ptr_level2[i * size_2];
-		}
-	}
-
-	~DynamicArray3D() {
-		delete[] ptr_level3;
-		delete[] ptr_level2;
-		delete[] ptr_level1;
-	}
-};
-
-// функция выводит значения трёхмерного массива в файл по указанному пути, указателю и размерам
-// вынесена из класса для наглдной демонстрации работы обращения по мультииндексу
-void print_array_3D(size_t size_1, size_t size_2, size_t size_3, 
-	int*** array_ptr, std::string full_path) {
-	std::ofstream outstream(full_path);
-	std::string separator = " ";
-	for (size_t i = 0; i < size_1; i++) {
-		for (size_t j = 0; j < size_2; j++) {
-			for (size_t k = 0; k < size_3; k++) {
-				outstream << array_ptr[i][j][k] << separator;
-			}
-			outstream << std::endl;
-		}
-		outstream << std::endl << std::endl;
-	}
-	outstream.close();
+	string output_name = "\\output_CSR3.txt";
+	my_mat.write_to_file(file_path + output_name);
 }
 
-void main() {
-	std::string file_path = "C:\\Users\\Georgiy\\Desktop\\C++ course\\lectures\\лекция 2\\домашка_2";
-	std::string input_name = "\\input.txt";
-	std::string output_name = "\\output.txt";
-	size_t size_1, size_2, size_3;
+void operation_test(string file_path) {
+	string input1_name = "\\input1_CSR3.txt";
+	string input2_name = "\\input2_CSR3.txt";
 
-	std::ifstream instream(file_path + input_name);
-	instream >> size_1;
-	instream >> size_2;
-	instream >> size_3;
-	instream.close();
+	CSR3Mat my_mat1;
+	my_mat1.read_from_file(file_path + input1_name);
+	//my_mat1.print_info();
 
-	DynamicArray3D arr3d = DynamicArray3D(size_1, size_2, size_3);
-	arr3d.make_zeros();
-	int*** array_ptr = arr3d.get_ptr();
+	CSR3Mat my_mat2;
+	my_mat2.read_from_file(file_path + input2_name);
+	//my_mat2.print_info();
 
-	print_array_3D(size_1, size_2, size_3, array_ptr, file_path + output_name);
+	FilledMat my_fmat1 = move(my_mat1.to_filled());
+	my_fmat1.print_info();
+
+	FilledMat my_fmat2 = move(my_mat2.to_filled());
+	my_fmat2.print_info();
+
+	try {
+		CSR3Mat my_mat3 = my_mat1 - 2 * my_mat2;
+		//my_mat3.print_info();
+		cout << endl << endl;
+		cout << "Mat1 - 2 * Mat2:" << endl;
+
+		FilledMat my_fmat3 = move(my_mat3.to_filled());
+		my_fmat3.print_info();
+	}
+	catch (const string error_message) {
+		cout << endl << error_message << endl;
+	}
+}
+
+template<typename T>
+void print_vector(vector<T> my_vector) {
+	cout << "Vector:" << endl;
+	for (size_t i = 0; i < my_vector.size(); i++)
+		cout << my_vector[i] << '\t';
+	cout << endl << endl;
+}
+
+void vector_multiplication_test(string file_path) {
+	string input_name = "\\input_CSR3.txt";
+
+	CSR3Mat my_mat;
+	my_mat.read_from_file(file_path + input_name);
+	//my_mat.print_info();
+
+	index_tuple mat_shape = my_mat.get_shape();
+	vector<double> my_vec(mat_shape.id2);
+	my_vec[0] = 1;
+	my_vec[2] = 1;
+	my_vec[3] = 1;
+	print_vector(my_vec);
+
+	FilledMat my_fmat = move(my_mat.to_filled());
+	my_fmat.print_info();
+
+	try {
+		vector<double> new_vect = my_mat * my_vec;
+		print_vector(new_vect);
+	}
+	catch (const string error_message) {
+		cout << endl << error_message << endl;
+	}
+}
+
+int main() {
+	string file_path = "C:\\Users\\Georgiy\\Desktop\\C++ course\\lectures\\лекция 5";
+
+	//indexation_test(file_path);
+	
+	//operation_test(file_path);
+
+	//vector_multiplication_test(file_path);
+
+
+	return 0;
 }
